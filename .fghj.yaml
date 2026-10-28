@@ -7,6 +7,8 @@ include:
 services:
   worker:
     build: .
+    # Node's inspector; docker-entrypoint.sh starts it.
+    debug: 9229
     environment:
       REDIS_URL: redis://${FGHJ_SERVICE_FQDN:platform/redis}:6379
       # The raw zone this time: the worker only talks to s3 itself and never
