@@ -1,0 +1,27 @@
+version: "2.0"
+
+include:
+  platform: https://github.com/fghj-examples/files-platform.git
+  api: https://github.com/fghj-examples/files-api.git
+
+services:
+  worker:
+    build: .
+    environment:
+      REDIS_URL: redis://${FGHJ_SERVICE_FQDN:platform/redis}:6379
+      # The raw zone this time: the worker only talks to s3 itself and never
+      # hands a URL to anyone, so it skips the proxy and the CA entirely.
+      S3_ENDPOINT: http://${FGHJ_SERVICE_FQDN:api/s3}:9000
+      S3_BUCKET: files
+      S3_ACCESS_KEY: files
+      S3_SECRET_KEY: dev-secret
+      API_URL: http://${FGHJ_SERVICE_FQDN:api/api}:3000
+      INTERNAL_TOKEN: dev-internal
+    depends_on:
+      platform/cache: {}
+      api/storage: {}
+      # Only called once a thumbnail is done; jobs wait in Redis until then.
+      api/app: {required: false}
+
+flows:
+  thumbnails: [worker]
